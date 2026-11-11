@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { CurrencyDisplay } from '../../components/ui/CurrencyDisplay';
 import type {
@@ -40,6 +40,11 @@ export const ProjectFinancialCard: React.FC<ProjectFinancialCardProps> = ({
   const [installmentAmount, setInstallmentAmount] = useState('');
   const [installmentNote, setInstallmentNote] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setChargedInput(String(chargedAmount));
+    setPaidInput(String(paidAmount));
+  }, [chargedAmount, paidAmount]);
 
   const handleSaveDirect = async (e: React.FormEvent) => {
     e.preventDefault();

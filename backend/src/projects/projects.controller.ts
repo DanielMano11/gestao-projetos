@@ -68,7 +68,10 @@ export class ProjectsController {
   }
 
   @Patch('projects/:id/status')
-  @ApiOperation({ summary: 'Atualiza status do projeto (conclui tarefas automaticamente quando COMPLETED)' })
+  @ApiOperation({
+    summary:
+      'Atualiza status do projeto (ao concluir, marca 100% das tarefas e quita 100% do pagamento)',
+  })
   updateStatus(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

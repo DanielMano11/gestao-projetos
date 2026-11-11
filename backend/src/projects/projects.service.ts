@@ -235,11 +235,14 @@ export class ProjectsService {
   async create(userId: string, dto: CreateProjectDto) {
     await this.ensureClientBelongsToUser(userId, dto.clientId);
 
+    const status = dto.status ?? ProjectStatus.PROPOSAL;
     const chargedAmount = dto.chargedAmount;
-    const paidAmount = dto.paidAmount ?? 0;
+    const paidAmount =
+      status === ProjectStatus.COMPLETED && !dto.paidAmount
+        ? chargedAmount
+        : (dto.paidAmount ?? 0);
     validateFinancialAmounts(chargedAmount, paidAmount);
 
-    const status = dto.status ?? ProjectStatus.PROPOSAL;
     const initialTasks = (dto.initialTasks ?? [])
       .map((t) => t.trim())
       .filter((t) => t.length > 0);
@@ -262,6 +265,17 @@ export class ProjectsService {
                     isCompleted: status === ProjectStatus.COMPLETED,
                     position: index,
                   })),
+                }
+              : undefined,
+          payments:
+            status === ProjectStatus.COMPLETED && paidAmount > 0
+              ? {
+                  create: [
+                    {
+                      amount: paidAmount,
+                      note: 'Quitação automática na conclusão do projeto',
+                    },
+                  ],
                 }
               : undefined,
         },
@@ -292,10 +306,20 @@ export class ProjectsService {
       dto.chargedAmount !== undefined
         ? dto.chargedAmount
         : Number(existing.chargedAmount);
+    const currentPaid = Number(existing.paidAmount);
     const nextPaid =
-      dto.paidAmount !== undefined ? dto.paidAmount : Number(existing.paidAmount);
+      dto.paidAmount !== undefined
+        ? dto.paidAmount
+        : dto.status === ProjectStatus.COMPLETED
+          ? nextCharged
+          : currentPaid;
 
     validateFinancialAmounts(nextCharged, nextPaid);
+
+    const remainingOnComplete =
+      dto.status === ProjectStatus.COMPLETED && dto.paidAmount === undefined
+        ? Number((nextCharged - currentPaid).toFixed(2))
+        : 0;
 
     const updated = await this.prisma.$transaction(async (tx) => {
       if (dto.status === ProjectStatus.COMPLETED) {
@@ -303,6 +327,17 @@ export class ProjectsService {
           where: { projectId: id },
           data: { isCompleted: true },
         });
+
+        if (remainingOnComplete > 0) {
+          await tx.payment.create({
+            data: {
+              projectId: id,
+              amount: remainingOnComplete,
+              paidAt: new Date(),
+              note: 'Quitação automática na conclusão do projeto',
+            },
+          });
+        }
       }
 
       return tx.project.update({
@@ -320,7 +355,10 @@ export class ProjectsService {
           ...(dto.chargedAmount !== undefined
             ? { chargedAmount: dto.chargedAmount }
             : {}),
-          ...(dto.paidAmount !== undefined ? { paidAmount: dto.paidAmount } : {}),
+          ...(dto.paidAmount !== undefined ||
+          dto.status === ProjectStatus.COMPLETED
+            ? { paidAmount: nextPaid }
+            : {}),
         },
         include: {
           client: { select: { id: true, name: true, whatsapp: true, email: true } },
@@ -334,7 +372,10 @@ export class ProjectsService {
   }
 
   async updateStatus(userId: string, id: string, dto: UpdateProjectStatusDto) {
-    await this.getProjectOwnedByUser(userId, id);
+    const existing = await this.getProjectOwnedByUser(userId, id);
+    const chargedAmount = Number(existing.chargedAmount);
+    const currentPaid = Number(existing.paidAmount);
+    const remainingAmount = Number((chargedAmount - currentPaid).toFixed(2));
 
     const updated = await this.prisma.$transaction(async (tx) => {
       if (dto.status === ProjectStatus.COMPLETED) {
@@ -342,11 +383,27 @@ export class ProjectsService {
           where: { projectId: id },
           data: { isCompleted: true },
         });
+
+        if (remainingAmount > 0) {
+          await tx.payment.create({
+            data: {
+              projectId: id,
+              amount: remainingAmount,
+              paidAt: new Date(),
+              note: 'Quitação automática na conclusão do projeto',
+            },
+          });
+        }
       }
 
       return tx.project.update({
         where: { id },
-        data: { status: dto.status },
+        data: {
+          status: dto.status,
+          ...(dto.status === ProjectStatus.COMPLETED
+            ? { paidAmount: chargedAmount }
+            : {}),
+        },
         include: {
           client: { select: { id: true, name: true, whatsapp: true, email: true } },
           tasks: { orderBy: { position: 'asc' } },

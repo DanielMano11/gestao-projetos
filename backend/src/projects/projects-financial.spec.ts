@@ -38,40 +38,73 @@ describe('Projects Financial Rules & Hybrid Payments (US3)', () => {
     expect(() => validateFinancialAmounts(1000, 1200)).toThrow(BadRequestException);
   });
 
-  it('deve somar parcela individual (Payment) ao paidAmount do projeto e marcar tarefas como concluídas quando COMPLETED', async () => {
+  it('deve somar parcela individual (Payment) ao paidAmount do projeto e, ao mudar para COMPLETED, quitar 100% do pagamento e concluir tarefas', async () => {
     const taskUpdateMany = jest.fn().mockResolvedValue({ count: 2 });
     const paymentCreate = jest.fn().mockResolvedValue({ id: 'pay-1' });
-    const projectUpdate = jest.fn().mockResolvedValue({
-      id: 'p1',
-      clientId: 'c1',
-      title: 'Projeto Teste',
-      description: null,
-      status: ProjectStatus.COMPLETED,
-      deadline: new Date('2026-11-20T00:00:00Z'),
-      chargedAmount: 5000,
-      paidAmount: 3500,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      tasks: [
-        { id: 't1', title: 'T1', isCompleted: true, position: 0, createdAt: new Date(), updatedAt: new Date() },
-      ],
-      payments: [
-        { id: 'pay-1', amount: 1500, paidAt: new Date(), note: 'Parcela 2', createdAt: new Date() },
-      ],
-    });
+    const projectUpdate = jest
+      .fn()
+      .mockResolvedValueOnce({
+        id: 'p1',
+        clientId: 'c1',
+        title: 'Projeto Teste',
+        description: null,
+        status: ProjectStatus.IN_PROGRESS,
+        deadline: new Date('2026-11-20T00:00:00Z'),
+        chargedAmount: 5000,
+        paidAmount: 3500,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        tasks: [
+          { id: 't1', title: 'T1', isCompleted: false, position: 0, createdAt: new Date(), updatedAt: new Date() },
+        ],
+        payments: [
+          { id: 'pay-1', amount: 1500, paidAt: new Date(), note: 'Parcela 2', createdAt: new Date() },
+        ],
+      })
+      .mockResolvedValueOnce({
+        id: 'p1',
+        clientId: 'c1',
+        title: 'Projeto Teste',
+        description: null,
+        status: ProjectStatus.COMPLETED,
+        deadline: new Date('2026-11-20T00:00:00Z'),
+        chargedAmount: 5000,
+        paidAmount: 5000,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        tasks: [
+          { id: 't1', title: 'T1', isCompleted: true, position: 0, createdAt: new Date(), updatedAt: new Date() },
+        ],
+        payments: [
+          { id: 'pay-2', amount: 1500, paidAt: new Date(), note: 'Quitação automática na conclusão do projeto', createdAt: new Date() },
+          { id: 'pay-1', amount: 1500, paidAt: new Date(), note: 'Parcela 2', createdAt: new Date() },
+        ],
+      });
 
     const prismaMock = {
       project: {
-        findFirst: jest.fn().mockResolvedValue({
-          id: 'p1',
-          clientId: 'c1',
-          chargedAmount: 5000,
-          paidAmount: 2000,
-          status: ProjectStatus.IN_PROGRESS,
-          deadline: new Date('2026-11-20T00:00:00Z'),
-          tasks: [],
-          payments: [],
-        }),
+        findFirst: jest
+          .fn()
+          .mockResolvedValueOnce({
+            id: 'p1',
+            clientId: 'c1',
+            chargedAmount: 5000,
+            paidAmount: 2000,
+            status: ProjectStatus.IN_PROGRESS,
+            deadline: new Date('2026-11-20T00:00:00Z'),
+            tasks: [],
+            payments: [],
+          })
+          .mockResolvedValueOnce({
+            id: 'p1',
+            clientId: 'c1',
+            chargedAmount: 5000,
+            paidAmount: 3500,
+            status: ProjectStatus.IN_PROGRESS,
+            deadline: new Date('2026-11-20T00:00:00Z'),
+            tasks: [],
+            payments: [],
+          }),
       },
       $transaction: jest.fn((cb: (tx: unknown) => unknown) =>
         cb({
@@ -88,15 +121,36 @@ describe('Projects Financial Rules & Hybrid Payments (US3)', () => {
       amount: 1500,
       note: 'Parcela 2',
     });
-    expect(paymentCreate).toHaveBeenCalled();
+    expect(paymentCreate).toHaveBeenCalledTimes(1);
     expect(afterPayment.paidAmount).toBe(3500);
     expect(afterPayment.receivableAmount).toBe(1500);
 
-    await service.updateStatus('u1', 'p1', { status: ProjectStatus.COMPLETED });
+    const completedProject = await service.updateStatus('u1', 'p1', {
+      status: ProjectStatus.COMPLETED,
+    });
     expect(taskUpdateMany).toHaveBeenCalledWith({
       where: { projectId: 'p1' },
       data: { isCompleted: true },
     });
+    expect(paymentCreate).toHaveBeenLastCalledWith({
+      data: expect.objectContaining({
+        projectId: 'p1',
+        amount: 1500,
+        note: 'Quitação automática na conclusão do projeto',
+      }),
+    });
+    expect(projectUpdate).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        where: { id: 'p1' },
+        data: {
+          status: ProjectStatus.COMPLETED,
+          paidAmount: 5000,
+        },
+      }),
+    );
+    expect(completedProject.paidAmount).toBe(5000);
+    expect(completedProject.receivableAmount).toBe(0);
+    expect(completedProject.financialStatus).toBe('PAID');
   });
 });
 
