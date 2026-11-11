@@ -1,0 +1,97 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ProjectStatus {
+  PROPOSAL
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  CANCELED
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @db.VarChar(120)
+  email        String   @unique @db.VarChar(160)
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  clients      Client[]
+
+  @@map("users")
+}
+
+model Client {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  name      String    @db.VarChar(150)
+  whatsapp  String?   @db.VarChar(30)
+  email     String?   @db.VarChar(160)
+  notes     String?   @db.Text
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects  Project[]
+
+  @@index([userId, name])
+  @@index([email])
+  @@map("clients")
+}
+
+model Project {
+  id            String        @id @default(uuid()) @db.Uuid
+  clientId      String        @map("client_id") @db.Uuid
+  title         String        @db.VarChar(180)
+  description   String?       @db.Text
+  status        ProjectStatus @default(PROPOSAL)
+  deadline      DateTime      @db.Date
+  chargedAmount Decimal       @default(0.00) @map("charged_amount") @db.Decimal(12, 2)
+  paidAmount    Decimal       @default(0.00) @map("paid_amount") @db.Decimal(12, 2)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  client        Client        @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  tasks         Task[]
+  payments      Payment[]
+
+  @@index([clientId])
+  @@index([status, deadline])
+  @@map("projects")
+}
+
+model Payment {
+  id        String   @id @default(uuid()) @db.Uuid
+  projectId String   @map("project_id") @db.Uuid
+  amount    Decimal  @db.Decimal(12, 2)
+  paidAt    DateTime @default(now()) @map("paid_at") @db.Date
+  note      String?  @db.VarChar(200)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, paidAt])
+  @@map("payments")
+}
+
+model Task {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @map("project_id") @db.Uuid
+  title       String   @db.VarChar(200)
+  isCompleted Boolean  @default(false) @map("is_completed")
+  position    Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, position])
+  @@map("tasks")
+}
+

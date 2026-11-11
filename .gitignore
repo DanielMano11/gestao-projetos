@@ -1,6 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
 
 # Environment files & local secrets
 .env
 .env.*
 !.env.example
 
+# IDE & OS
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/*
+!.vscode/extensions.json
+.idea/
