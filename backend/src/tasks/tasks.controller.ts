@@ -7,13 +7,11 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import {
   AuthenticatedUser,
   CurrentUser,
@@ -21,7 +19,6 @@ import {
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller()
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}

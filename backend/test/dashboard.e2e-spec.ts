@@ -1,9 +1,9 @@
 import { ExecutionContext, INestApplication } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { DashboardController } from '../src/dashboard/dashboard.controller';
 import { DashboardService } from '../src/dashboard/dashboard.service';
-import { JwtAuthGuard } from '../src/common/guards/jwt-auth.guard';
 
 describe('DashboardController (E2E)', () => {
   let app: INestApplication;
@@ -29,17 +29,20 @@ describe('DashboardController (E2E)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [DashboardController],
-      providers: [{ provide: DashboardService, useValue: dashboardServiceMock }],
-    })
-      .overrideGuard(JwtAuthGuard)
-      .useValue({
-        canActivate: (ctx: ExecutionContext) => {
-          const req = ctx.switchToHttp().getRequest();
-          req.user = { id: 'u1', email: 'gestor@exemplo.com', name: 'Gestor' };
-          return true;
+      providers: [
+        { provide: DashboardService, useValue: dashboardServiceMock },
+        {
+          provide: APP_GUARD,
+          useValue: {
+            canActivate: (ctx: ExecutionContext) => {
+              const req = ctx.switchToHttp().getRequest();
+              req.user = { id: 'u1', email: 'gestor@exemplo.com', name: 'Gestor' };
+              return true;
+            },
+          },
         },
-      })
-      .compile();
+      ],
+    }).compile();
 
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api/v1');
@@ -59,4 +62,3 @@ describe('DashboardController (E2E)', () => {
     expect(res.body.countsByStatus.IN_PROGRESS).toBe(2);
   });
 });
-

@@ -1,10 +1,10 @@
 import { ExecutionContext, INestApplication, ValidationPipe } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { ProjectStatus } from '@prisma/client';
 import request from 'supertest';
 import { ProjectsController } from '../src/projects/projects.controller';
 import { ProjectsService } from '../src/projects/projects.service';
-import { JwtAuthGuard } from '../src/common/guards/jwt-auth.guard';
 
 describe('ProjectsController (E2E)', () => {
   let app: INestApplication;
@@ -23,17 +23,20 @@ describe('ProjectsController (E2E)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [ProjectsController],
-      providers: [{ provide: ProjectsService, useValue: projectsServiceMock }],
-    })
-      .overrideGuard(JwtAuthGuard)
-      .useValue({
-        canActivate: (ctx: ExecutionContext) => {
-          const req = ctx.switchToHttp().getRequest();
-          req.user = { id: 'u1', email: 'gestor@exemplo.com', name: 'Gestor' };
-          return true;
+      providers: [
+        { provide: ProjectsService, useValue: projectsServiceMock },
+        {
+          provide: APP_GUARD,
+          useValue: {
+            canActivate: (ctx: ExecutionContext) => {
+              const req = ctx.switchToHttp().getRequest();
+              req.user = { id: 'u1', email: 'gestor@exemplo.com', name: 'Gestor' };
+              return true;
+            },
+          },
         },
-      })
-      .compile();
+      ],
+    }).compile();
 
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api/v1');
@@ -61,4 +64,3 @@ describe('ProjectsController (E2E)', () => {
     expect(res.body.progressPercentage).toBe(100);
   });
 });
-

@@ -1,9 +1,9 @@
 import { ExecutionContext, INestApplication, ValidationPipe } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { ClientsController } from '../src/clients/clients.controller';
 import { ClientsService } from '../src/clients/clients.service';
-import { JwtAuthGuard } from '../src/common/guards/jwt-auth.guard';
 
 describe('ClientsController (E2E)', () => {
   let app: INestApplication;
@@ -23,17 +23,20 @@ describe('ClientsController (E2E)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [ClientsController],
-      providers: [{ provide: ClientsService, useValue: clientsServiceMock }],
-    })
-      .overrideGuard(JwtAuthGuard)
-      .useValue({
-        canActivate: (ctx: ExecutionContext) => {
-          const req = ctx.switchToHttp().getRequest();
-          req.user = { id: 'u1', email: 'gestor@exemplo.com', name: 'Gestor' };
-          return true;
+      providers: [
+        { provide: ClientsService, useValue: clientsServiceMock },
+        {
+          provide: APP_GUARD,
+          useValue: {
+            canActivate: (ctx: ExecutionContext) => {
+              const req = ctx.switchToHttp().getRequest();
+              req.user = { id: 'u1', email: 'gestor@exemplo.com', name: 'Gestor' };
+              return true;
+            },
+          },
         },
-      })
-      .compile();
+      ],
+    }).compile();
 
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api/v1');
@@ -62,4 +65,3 @@ describe('ClientsController (E2E)', () => {
     expect(res.body.name).toBe('Novo Cliente');
   });
 });
-

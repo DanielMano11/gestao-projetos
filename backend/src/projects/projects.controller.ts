@@ -8,7 +8,6 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
@@ -20,7 +19,6 @@ import {
   UpdateProjectFinancialsDto,
 } from './dto/update-project-financials.dto';
 import { ProjectFilterDto } from './dto/project-filter.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import {
   AuthenticatedUser,
   CurrentUser,
@@ -28,7 +26,6 @@ import {
 
 @ApiTags('Projects')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller()
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}

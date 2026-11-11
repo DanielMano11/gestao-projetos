@@ -1,20 +1,15 @@
 <!--
 Sync Impact Report:
-- Version change: [CONSTITUTION_VERSION] (template inicial) → 1.0.0
+- Version change: 1.0.0 → 1.1.0 (MINOR: adição da seção estrita de Diretrizes de Segurança e Hardening e expansão do Princípio IV)
 - Modified principles:
-  - [PRINCIPLE_1_NAME] → I. Arquitetura Modular e Separação de Responsabilidades (NestJS)
-  - [PRINCIPLE_2_NAME] → II. Integridade Relacional e Acesso a Dados Seguro (Prisma & PostgreSQL)
-  - [PRINCIPLE_3_NAME] → III. Componentização, Tipagem Estrita e Estado Previsível (Vite & React)
-  - [PRINCIPLE_4_NAME] → IV. Contratos de API, Segurança e Controle de Acesso (NON-NEGOTIABLE)
-  - [PRINCIPLE_5_NAME] → V. Testes Automatizados e Observabilidade
+  - IV. Contratos de API, Segurança e Controle de Acesso (NON-NEGOTIABLE) → Atualizado para refletir fail-fast de variáveis de ambiente, APP_GUARD global com @Public(), Helmet/CORS/Throttler e sanitização de erros 500/Prisma
 - Added sections:
-  - Stack Tecnológica e Restrições Arquiteturais
-  - Fluxo de Desenvolvimento e Portões de Qualidade
+  - Diretrizes de Segurança e Hardening (NON-NEGOTIABLE)
 - Removed sections: None
 - Templates requiring updates:
   - ✅ .specify/templates/plan-template.md (Constitution Check compatível)
-  - ✅ .specify/templates/spec-template.md (Alinhado com requisitos de segurança e testes)
-  - ✅ .specify/templates/tasks-template.md (Alinhado com estrutura modular full-stack)
+  - ✅ .specify/templates/spec-template.md (Compatível)
+  - ✅ .specify/templates/tasks-template.md (Compatível)
 - Follow-up TODOs: None
 -->
 
@@ -45,11 +40,11 @@ Sync Impact Report:
 **Justificativa**: Reduz erros em tempo de execução, promove reuso de interface e garante uma experiência de usuário responsiva e consistente no acompanhamento de projetos e tarefas.
 
 ### IV. Contratos de API, Segurança e Controle de Acesso (NON-NEGOTIABLE)
-- A comunicação entre frontend e backend DEVE ocorrer via contratos RESTful padronizados, documentados com OpenAPI/Swagger (`@nestjs/swagger`) e protegidos por um filtro global de exceções que retorne respostas de erro estruturadas e consistentes.
-- Endpoints protegidos DEVEM exigir autenticação válida (JWT via Guards do NestJS) e verificação explícita de autorização baseada no papel do usuário dentro do projeto ou organização (RBAC/escopo de recurso).
-- Segredos, chaves JWT e credenciais de banco (`DATABASE_URL`) DEVEM ser carregados exclusivamente via variáveis de ambiente validadas na inicialização da aplicação (`@nestjs/config`), sendo terminantemente proibido versionar arquivos `.env` com dados reais.
+- A comunicação entre frontend e backend DEVE ocorrer via contratos RESTful padronizados, documentados com OpenAPI/Swagger (`@nestjs/swagger`) e protegidos por um filtro global de exceções que retorne respostas de erro estruturadas, sem jamás expor detalhes internos de infraestrutura ou banco de dados.
+- A autenticação JWT DEVE ser aplicada globalmente por padrão (`APP_GUARD`), exigindo liberação explícita via decorator `@Public()` apenas para rotas intencionalmente abertas, combinada ao isolamento estrito de recursos por usuário/carteira.
+- Segredos, chaves JWT (`JWT_SECRET`) e credenciais de banco (`DATABASE_URL`) DEVEM ser validados na inicialização com falha imediata (*crash-on-boot*) caso ausentes ou fracos, sendo proibido o uso de valores *default* (*fallback*) hardcoded no código-fonte ou o versionamento de arquivos `.env` reais.
 
-**Justificativa**: Em um sistema colaborativo de gestão de projetos, o isolamento de permissões entre equipes e a estabilidade dos contratos de API são requisitos inegociáveis de segurança.
+**Justificativa**: Em um sistema de gestão de projetos e fluxo de caixa, o endurecimento (*hardening*) da superfície de ataque, o isolamento de dados e a impossibilidade de subir a aplicação com segredos fracos são requisitos inegociáveis.
 
 ### V. Testes Automatizados e Observabilidade
 - Regras de negócio críticas nos Services do NestJS DEVEM possuir testes unitários automatizados (com mocks para dependências externas), e fluxos essenciais da API (autenticação, gestão de projetos e transição de status de tarefas) DEVEM contar com testes de integração/E2E utilizando banco de dados de teste isolado.
@@ -58,10 +53,27 @@ Sync Impact Report:
 
 **Justificativa**: Previne regressões em regras críticas de prazos, permissões e fluxo de trabalho, além de permitir diagnóstico rápido de incidentes em desenvolvimento e produção.
 
+## Diretrizes de Segurança e Hardening (NON-NEGOTIABLE)
+
+1. **Validação Estrita de Variáveis de Ambiente (*Crash-on-Boot*)**:
+   - Variáveis de ambiente críticas (`JWT_SECRET`, `DATABASE_URL`) DEVEM ser validadas obrigatoriamente durante a inicialização da aplicação (`ConfigModule.forRoot({ validate })`).
+   - A aplicação DEVE abortar imediatamente sua inicialização (*crash-on-boot*) caso qualquer variável obrigatória esteja ausente, vazia ou abaixo dos critérios mínimos de entropia/tamanho (ex.: `JWT_SECRET` com menos de 32 caracteres).
+   - É terminantemente PROIBIDO definir valores *default* (*fallback* em código, como `config.get('JWT_SECRET', 'default-secret')`) para variáveis sensíveis.
+2. **Autenticação Global por Padrão (`APP_GUARD` + `@Public()`)**:
+   - O `JwtAuthGuard` DEVE ser registrado globalmente no módulo raiz via provider `APP_GUARD`, garantindo que todo novo endpoint nasça protegido por padrão (*secure-by-default*).
+   - Rotas públicas (como `POST /auth/login` e `POST /auth/register`) DEVEM ser marcadas explicitamente com o decorator customizado `@Public()` (via metadado `IS_PUBLIC_KEY` inspecionado pelo `Reflector` no `JwtAuthGuard`).
+3. **Proteção de Perímetro HTTP (`helmet`, CORS Restrito e Rate Limiting)**:
+   - O backend DEVE aplicar cabeçalhos HTTP de segurança utilizando o middleware `helmet` na inicialização (`main.ts`).
+   - O CORS DEVE ser configurado de forma restrita via variável de ambiente (`CORS_ORIGIN` / `FRONTEND_URL`), sendo proibido o uso de origem curinga irrestrita (`*`) em produção.
+   - A aplicação DEVE configurar limitação de taxa (*rate limiting*) com `@nestjs/throttler` (`ThrottlerModule` e `ThrottlerGuard`), aplicando limites estritos nas rotas públicas de autenticação para mitigar ataques de força bruta e enumeração.
+4. **Sanitização de Exceções e Ocultação de Erros Internos (`500` e Prisma)**:
+   - O filtro global de exceções (`AllExceptionsFilter`) NUNCA DEVE repassar ao cliente mensagens brutas de erros `500 Internal Server Error`, *stack traces*, códigos internos ou exceções do Prisma ORM (`PrismaClientKnownRequestError`, `PrismaClientValidationError`, nomes de tabelas/constraints ou trechos de SQL).
+   - Detalhes técnicos de falhas não tratadas ou de banco de dados DEVEM ser registrados apenas nos logs internos do servidor, retornando ao cliente exclusivamente uma mensagem genérica e segura (ex.: `"Erro interno no servidor"`).
+
 ## Stack Tecnológica e Restrições Arquiteturais
 
 - **Linguagem Padrão**: TypeScript (`strict: true`) em toda a stack (Backend e Frontend).
-- **Backend**: NestJS sobre Node.js LTS, arquitetura modular, validação via `class-validator`/`class-transformer` e documentação via `@nestjs/swagger`.
+- **Backend**: NestJS sobre Node.js LTS, arquitetura modular, validação via `class-validator`/`class-transformer`, segurança de perímetro com `helmet` e `@nestjs/throttler`, e documentação via `@nestjs/swagger`.
 - **Persistência**: PostgreSQL como banco de dados relacional principal e Prisma ORM para modelagem, tipagem e migrações.
 - **Frontend**: React construído com Vite, roteamento declarativo e consumo tipado da API REST.
 - **Padronização de Código**: ESLint e Prettier DEVEM estar configurados em ambos os projetos para impor formatação e regras estáticas de código de forma uniforme.
@@ -74,7 +86,7 @@ Sync Impact Report:
 3. **Portões de Qualidade (Quality Gates)**: Nenhuma alteração pode ser mesclada à branch principal sem:
    - Compilação TypeScript sem erros (`tsc --noEmit` / build limpo no backend e frontend);
    - Execução sem falhas do linter (`eslint`) e dos testes automatizados;
-   - Revisão de conformidade com os princípios desta Constituição.
+   - Revisão de conformidade com os princípios e diretrizes de Segurança e Hardening desta Constituição.
 
 ## Governance
 
@@ -85,4 +97,4 @@ Sync Impact Report:
   - **PATCH**: Ajustes de redação, correções gramaticais ou esclarecimentos sem alteração de regra.
 - Todas as especificações (`spec.md`), planos de implementação (`plan.md`), listas de tarefas (`tasks.md`) e revisões de código (Pull Requests) DEVEM verificar explicitamente a conformidade com os princípios aqui estabelecidos.
 
-**Version**: 1.0.0 | **Ratified**: 2026-11-11 | **Last Amended**: 2026-11-11
+**Version**: 1.1.0 | **Ratified**: 2026-11-11 | **Last Amended**: 2026-11-11
