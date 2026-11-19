@@ -296,32 +296,51 @@ export class ProjectsService {
   }
 
   async update(userId: string, id: string, dto: UpdateProjectDto) {
-    const existing = await this.getProjectOwnedByUser(userId, id);
-
-    if (dto.clientId && dto.clientId !== existing.clientId) {
-      await this.ensureClientBelongsToUser(userId, dto.clientId);
-    }
-
-    const nextCharged =
-      dto.chargedAmount !== undefined
-        ? dto.chargedAmount
-        : Number(existing.chargedAmount);
-    const currentPaid = Number(existing.paidAmount);
-    const nextPaid =
-      dto.paidAmount !== undefined
-        ? dto.paidAmount
-        : dto.status === ProjectStatus.COMPLETED
-          ? nextCharged
-          : currentPaid;
-
-    validateFinancialAmounts(nextCharged, nextPaid);
-
-    const remainingOnComplete =
-      dto.status === ProjectStatus.COMPLETED && dto.paidAmount === undefined
-        ? Number((nextCharged - currentPaid).toFixed(2))
-        : 0;
-
     const updated = await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.project.findFirst({
+        where: {
+          id,
+          client: { userId },
+        },
+        include: {
+          client: { select: { id: true, name: true, whatsapp: true, email: true } },
+          tasks: { orderBy: { position: 'asc' } },
+          payments: { orderBy: { paidAt: 'desc' } },
+        },
+      });
+
+      if (!existing) {
+        throw new NotFoundException('Projeto não encontrado na sua carteira');
+      }
+
+      if (dto.clientId && dto.clientId !== existing.clientId) {
+        const client = await tx.client.findFirst({
+          where: { id: dto.clientId, userId },
+        });
+        if (!client) {
+          throw new NotFoundException('Cliente não encontrado na sua carteira');
+        }
+      }
+
+      const nextCharged =
+        dto.chargedAmount !== undefined
+          ? dto.chargedAmount
+          : Number(existing.chargedAmount);
+      const currentPaid = Number(existing.paidAmount);
+      const nextPaid =
+        dto.paidAmount !== undefined
+          ? dto.paidAmount
+          : dto.status === ProjectStatus.COMPLETED
+            ? nextCharged
+            : currentPaid;
+
+      validateFinancialAmounts(nextCharged, nextPaid);
+
+      const remainingOnComplete =
+        dto.status === ProjectStatus.COMPLETED && dto.paidAmount === undefined
+          ? Number((nextCharged - currentPaid).toFixed(2))
+          : 0;
+
       if (dto.status === ProjectStatus.COMPLETED) {
         await tx.task.updateMany({
           where: { projectId: id },
@@ -372,12 +391,22 @@ export class ProjectsService {
   }
 
   async updateStatus(userId: string, id: string, dto: UpdateProjectStatusDto) {
-    const existing = await this.getProjectOwnedByUser(userId, id);
-    const chargedAmount = Number(existing.chargedAmount);
-    const currentPaid = Number(existing.paidAmount);
-    const remainingAmount = Number((chargedAmount - currentPaid).toFixed(2));
-
     const updated = await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.project.findFirst({
+        where: {
+          id,
+          client: { userId },
+        },
+      });
+
+      if (!existing) {
+        throw new NotFoundException('Projeto não encontrado na sua carteira');
+      }
+
+      const chargedAmount = Number(existing.chargedAmount);
+      const currentPaid = Number(existing.paidAmount);
+      const remainingAmount = Number((chargedAmount - currentPaid).toFixed(2));
+
       if (dto.status === ProjectStatus.COMPLETED) {
         await tx.task.updateMany({
           where: { projectId: id },
@@ -420,34 +449,56 @@ export class ProjectsService {
     id: string,
     dto: UpdateProjectFinancialsDto,
   ) {
-    await this.getProjectOwnedByUser(userId, id);
-    validateFinancialAmounts(dto.chargedAmount, dto.paidAmount);
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.project.findFirst({
+        where: {
+          id,
+          client: { userId },
+        },
+      });
 
-    const updated = await this.prisma.project.update({
-      where: { id },
-      data: {
-        chargedAmount: dto.chargedAmount,
-        paidAmount: dto.paidAmount,
-      },
-      include: {
-        client: { select: { id: true, name: true, whatsapp: true, email: true } },
-        tasks: { orderBy: { position: 'asc' } },
-        payments: { orderBy: { paidAt: 'desc' } },
-      },
+      if (!existing) {
+        throw new NotFoundException('Projeto não encontrado na sua carteira');
+      }
+
+      validateFinancialAmounts(dto.chargedAmount, dto.paidAmount);
+
+      return tx.project.update({
+        where: { id },
+        data: {
+          chargedAmount: dto.chargedAmount,
+          paidAmount: dto.paidAmount,
+        },
+        include: {
+          client: { select: { id: true, name: true, whatsapp: true, email: true } },
+          tasks: { orderBy: { position: 'asc' } },
+          payments: { orderBy: { paidAt: 'desc' } },
+        },
+      });
     });
 
     return this.formatProjectResponse(updated);
   }
 
   async addPayment(userId: string, projectId: string, dto: CreatePaymentDto) {
-    const existing = await this.getProjectOwnedByUser(userId, projectId);
-    const chargedAmount = Number(existing.chargedAmount);
-    const currentPaid = Number(existing.paidAmount);
-    const nextPaid = Number((currentPaid + dto.amount).toFixed(2));
-
-    validateFinancialAmounts(chargedAmount, nextPaid);
-
     const updated = await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.project.findFirst({
+        where: {
+          id: projectId,
+          client: { userId },
+        },
+      });
+
+      if (!existing) {
+        throw new NotFoundException('Projeto não encontrado na sua carteira');
+      }
+
+      const chargedAmount = Number(existing.chargedAmount);
+      const currentPaid = Number(existing.paidAmount);
+      const nextPaid = Number((currentPaid + dto.amount).toFixed(2));
+
+      validateFinancialAmounts(chargedAmount, nextPaid);
+
       await tx.payment.create({
         data: {
           projectId,
@@ -472,25 +523,25 @@ export class ProjectsService {
   }
 
   async removePayment(userId: string, paymentId: string) {
-    const payment = await this.prisma.payment.findFirst({
-      where: {
-        id: paymentId,
-        project: { client: { userId } },
-      },
-      include: { project: true },
-    });
-
-    if (!payment) {
-      throw new NotFoundException('Lançamento de pagamento não encontrado');
-    }
-
-    const currentPaid = Number(payment.project.paidAmount);
-    const nextPaid = Math.max(
-      0,
-      Number((currentPaid - Number(payment.amount)).toFixed(2)),
-    );
-
     const updated = await this.prisma.$transaction(async (tx) => {
+      const payment = await tx.payment.findFirst({
+        where: {
+          id: paymentId,
+          project: { client: { userId } },
+        },
+        include: { project: true },
+      });
+
+      if (!payment) {
+        throw new NotFoundException('Lançamento de pagamento não encontrado');
+      }
+
+      const currentPaid = Number(payment.project.paidAmount);
+      const nextPaid = Math.max(
+        0,
+        Number((currentPaid - Number(payment.amount)).toFixed(2)),
+      );
+
       await tx.payment.delete({ where: { id: paymentId } });
 
       return tx.project.update({

@@ -10,9 +10,9 @@ export class LoginDto {
   @MaxLength(160)
   email: string;
 
-  @ApiProperty({ example: 'admin123', maxLength: 128 })
+  @ApiProperty({ example: 'SenhaForte123', maxLength: 72 })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(128)
+  @MaxLength(72)
   password: string;
 }

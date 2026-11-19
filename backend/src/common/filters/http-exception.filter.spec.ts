@@ -18,12 +18,17 @@ describe('AllExceptionsFilter', () => {
   beforeEach(() => {
     filter = new AllExceptionsFilter();
     jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+    jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
     jsonMock = jest.fn();
     statusMock = jest.fn().mockReturnValue({ json: jsonMock });
     hostMock = {
       switchToHttp: () => ({
         getResponse: () => ({ status: statusMock }),
-        getRequest: () => ({ method: 'POST', url: '/api/v1/clients' }),
+        getRequest: () => ({
+          method: 'POST',
+          url: '/api/v1/clients',
+          ip: '127.0.0.1',
+        }),
       }),
     } as unknown as ArgumentsHost;
   });
@@ -139,6 +144,34 @@ describe('AllExceptionsFilter', () => {
     expect(statusMock).toHaveBeenLastCalledWith(HttpStatus.TOO_MANY_REQUESTS);
     expect(jsonMock.mock.calls[1][0].message).toBe(
       'ThrottlerException: Too Many Requests',
+    );
+  });
+
+  it('deve registrar log warn de segurança para respostas 401, 403 e 429', () => {
+    const warnSpy = jest.spyOn(Logger.prototype, 'warn');
+
+    filter.catch(
+      new HttpException('Não autorizado', HttpStatus.UNAUTHORIZED),
+      hostMock,
+    );
+    filter.catch(
+      new HttpException('Acesso negado', HttpStatus.FORBIDDEN),
+      hostMock,
+    );
+    filter.catch(
+      new HttpException('Muitas requisições', HttpStatus.TOO_MANY_REQUESTS),
+      hostMock,
+    );
+
+    expect(warnSpy).toHaveBeenCalledTimes(3);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('SECURITY_ACCESS_DENIED POST /api/v1/clients -> 401'),
+    );
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('SECURITY_ACCESS_DENIED POST /api/v1/clients -> 403'),
+    );
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('SECURITY_ACCESS_DENIED POST /api/v1/clients -> 429'),
     );
   });
 });

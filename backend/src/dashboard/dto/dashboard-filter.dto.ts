@@ -7,6 +7,7 @@ import {
   IsInt,
   IsOptional,
   IsUUID,
+  Matches,
   Max,
   Min,
 } from 'class-validator';
@@ -49,6 +50,9 @@ export class DashboardFilterDto {
   })
   @IsOptional()
   @Transform(emptyToUndefined)
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'startDate deve estar no formato YYYY-MM-DD',
+  })
   @IsDateString()
   startDate?: string;
 
@@ -58,6 +62,9 @@ export class DashboardFilterDto {
   })
   @IsOptional()
   @Transform(emptyToUndefined)
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'endDate deve estar no formato YYYY-MM-DD',
+  })
   @IsDateString()
   endDate?: string;
 

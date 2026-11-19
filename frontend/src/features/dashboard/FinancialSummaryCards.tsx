@@ -55,14 +55,16 @@ export const FinancialSummaryCards: React.FC<FinancialSummaryCardsProps> = ({
       value: formatCurrencyBRL(entriesInPeriod),
       subtitle: periodSubtitle,
       icon: ArrowDownLeft,
-      color: 'text-teal-700 bg-teal-50 border-teal-200',
+      color:
+        'text-teal-700 bg-teal-50 border-teal-200 dark:text-teal-300 dark:bg-teal-950/60 dark:border-teal-800/60',
     },
     {
       title: 'Total Recebido (Caixa)',
       value: formatCurrencyBRL(financials.totalPaid),
       subtitle: `Taxa de recebimento: ${collectionRate}% do contratado`,
       icon: TrendingUp,
-      color: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+      color:
+        'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-300 dark:bg-emerald-950/60 dark:border-emerald-800/60',
     },
     {
       title: 'Total Cobrado (Contratado)',
@@ -72,21 +74,24 @@ export const FinancialSummaryCards: React.FC<FinancialSummaryCardsProps> = ({
           ? `Ticket médio: ${formatCurrencyBRL(averageTicket)}`
           : 'Projetos ativos e concluídos',
       icon: DollarSign,
-      color: 'text-indigo-700 bg-indigo-50 border-indigo-200',
+      color:
+        'text-indigo-700 bg-indigo-50 border-indigo-200 dark:text-indigo-300 dark:bg-indigo-950/60 dark:border-indigo-800/60',
     },
     {
       title: 'Saldo a Receber',
       value: formatCurrencyBRL(financials.totalReceivable),
       subtitle: 'Pendente de projetos contratados',
       icon: Clock,
-      color: 'text-amber-700 bg-amber-50 border-amber-200',
+      color:
+        'text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-300 dark:bg-amber-950/60 dark:border-amber-800/60',
     },
     {
       title: 'Em Propostas',
       value: formatCurrencyBRL(financials.proposalsTotalValue),
       subtitle: 'Potencial em negociação',
       icon: FileText,
-      color: 'text-slate-700 bg-slate-100 border-slate-200',
+      color:
+        'text-slate-700 bg-slate-100 border-slate-200 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700',
     },
   ];
 
@@ -98,20 +103,22 @@ export const FinancialSummaryCards: React.FC<FinancialSummaryCardsProps> = ({
           return (
             <div
               key={card.title}
-              className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+              className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   {card.title}
                 </span>
                 <div className={`rounded-lg border p-2 ${card.color}`}>
                   <Icon className="h-4 w-4" />
                 </div>
               </div>
-              <p className="mt-3 text-2xl font-bold text-slate-900">
+              <p className="mt-3 text-2xl font-bold text-slate-900 dark:text-slate-100">
                 {card.value}
               </p>
-              <p className="mt-1 text-xs text-slate-500">{card.subtitle}</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                {card.subtitle}
+              </p>
             </div>
           );
         })}
@@ -119,58 +126,58 @@ export const FinancialSummaryCards: React.FC<FinancialSummaryCardsProps> = ({
 
       {systemOverview && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <div>
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 Projetos no Filtro
               </p>
-              <p className="mt-0.5 text-lg font-bold text-slate-900">
+              <p className="mt-0.5 text-lg font-bold text-slate-900 dark:text-slate-100">
                 {systemOverview.totalProjects}{' '}
-                <span className="text-xs font-normal text-slate-500">
+                <span className="text-xs font-normal text-slate-500 dark:text-slate-400">
                   ({systemOverview.activeProjectsCount} ativos)
                 </span>
               </p>
             </div>
-            <Activity className="h-5 w-5 text-indigo-500" />
+            <Activity className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <div>
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 Taxa de Conclusão
               </p>
-              <p className="mt-0.5 text-lg font-bold text-emerald-700">
+              <p className="mt-0.5 text-lg font-bold text-emerald-700 dark:text-emerald-400">
                 {systemOverview.completionRatePercentage}%{' '}
-                <span className="text-xs font-normal text-slate-500">
+                <span className="text-xs font-normal text-slate-500 dark:text-slate-400">
                   ({systemOverview.completedProjectsCount} concluídos)
                 </span>
               </p>
             </div>
-            <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+            <CheckCircle2 className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <div>
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 Progresso Médio (Tarefas)
               </p>
-              <p className="mt-0.5 text-lg font-bold text-indigo-700">
+              <p className="mt-0.5 text-lg font-bold text-indigo-700 dark:text-indigo-400">
                 {systemOverview.averageProgressPercentage}%
               </p>
             </div>
-            <TrendingUp className="h-5 w-5 text-indigo-500" />
+            <TrendingUp className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <div>
-              <p className="text-xs font-medium text-slate-500">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 Projetos em Atraso
               </p>
               <p
                 className={`mt-0.5 text-lg font-bold ${
                   systemOverview.overdueProjectsCount > 0
-                    ? 'text-red-600'
-                    : 'text-slate-900'
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-slate-900 dark:text-slate-100'
                 }`}
               >
                 {systemOverview.overdueProjectsCount}
@@ -179,8 +186,8 @@ export const FinancialSummaryCards: React.FC<FinancialSummaryCardsProps> = ({
             <AlertTriangle
               className={`h-5 w-5 ${
                 systemOverview.overdueProjectsCount > 0
-                  ? 'text-red-500'
-                  : 'text-slate-400'
+                  ? 'text-red-500 dark:text-red-400'
+                  : 'text-slate-400 dark:text-slate-500'
               }`}
             />
           </div>

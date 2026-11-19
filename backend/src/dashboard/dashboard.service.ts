@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma, ProjectStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { computeProjectMetrics } from '../projects/projects.service';
@@ -75,6 +75,9 @@ export class DashboardService {
           ? filter.startDate
           : `${filter.startDate}T00:00:00.000Z`,
       );
+      if (Number.isNaN(fromDate.getTime())) {
+        throw new BadRequestException('Data inicial inválida');
+      }
     } else if (filter.periodDays && filter.periodDays > 0) {
       const refUtcMidnight = Date.UTC(
         referenceDate.getUTCFullYear(),
@@ -96,6 +99,9 @@ export class DashboardService {
           ? filter.endDate
           : `${filter.endDate}T23:59:59.999Z`,
       );
+      if (Number.isNaN(toDate.getTime())) {
+        throw new BadRequestException('Data final inválida');
+      }
     } else if (filter.periodDays && filter.periodDays > 0) {
       toDate = new Date(
         Date.UTC(
@@ -107,6 +113,12 @@ export class DashboardService {
           59,
           999,
         ),
+      );
+    }
+
+    if (fromDate && toDate && fromDate > toDate) {
+      throw new BadRequestException(
+        'A data inicial não pode ser posterior à data final',
       );
     }
 

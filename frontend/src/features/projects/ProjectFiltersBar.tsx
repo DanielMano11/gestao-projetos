@@ -12,7 +12,7 @@ export const ProjectFiltersBar: React.FC<ProjectFiltersBarProps> = ({
   onChange,
 }) => {
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <input
         type="text"
         placeholder="Buscar projeto ou cliente..."
@@ -20,7 +20,7 @@ export const ProjectFiltersBar: React.FC<ProjectFiltersBarProps> = ({
         onChange={(e) =>
           onChange({ ...filters, search: e.target.value, page: 1 })
         }
-        className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm sm:w-64"
+        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 sm:w-64"
       />
 
       <select
@@ -33,7 +33,7 @@ export const ProjectFiltersBar: React.FC<ProjectFiltersBarProps> = ({
             page: 1,
           })
         }
-        className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+        className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
       >
         <option value="">Todos os status</option>
         {(Object.keys(STATUS_LABELS) as ProjectStatus[]).map((st) => (
@@ -43,7 +43,7 @@ export const ProjectFiltersBar: React.FC<ProjectFiltersBarProps> = ({
         ))}
       </select>
 
-      <label className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700">
+      <label className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
         <input
           type="checkbox"
           checked={Boolean(filters.overdueOnly)}
@@ -54,7 +54,7 @@ export const ProjectFiltersBar: React.FC<ProjectFiltersBarProps> = ({
         Apenas Atrasados
       </label>
 
-      <label className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700">
+      <label className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
         <input
           type="checkbox"
           checked={Boolean(filters.urgentOnly)}

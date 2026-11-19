@@ -15,7 +15,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 
   return (
     <div className="w-full">
-      <div className="mb-1 flex items-center justify-between text-xs text-slate-600">
+      <div className="mb-1 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
         <span className="font-medium">{clamped}% concluído</span>
         {totalCount !== undefined && (
           <span>
@@ -25,7 +25,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
           </span>
         )}
       </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
         <div
           role="progressbar"
           aria-valuenow={clamped}
@@ -33,7 +33,9 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
           aria-valuemax={100}
           style={{ width: `${clamped}%` }}
           className={`h-full transition-all duration-300 ${
-            clamped === 100 ? 'bg-emerald-600' : 'bg-indigo-600'
+            clamped === 100
+              ? 'bg-emerald-600 dark:bg-emerald-500'
+              : 'bg-indigo-600 dark:bg-indigo-500'
           }`}
         />
       </div>

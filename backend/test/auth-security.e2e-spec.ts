@@ -87,8 +87,18 @@ describe('Auth & Security Hardening (E2E Real)', () => {
   });
 
   describe('2. Fluxo Real @Public() -> JWT Real -> Rotas Protegidas', () => {
-    it('deve permitir register (@Public()), autenticar em /auth/me e permitir login (@Public())', async () => {
-      // Chamada #1 em /auth/register
+    it('deve rejeitar senha fraca com 400 no /auth/register e permitir register forte + login', async () => {
+      // Chamada #1 em /auth/register (política de senha forte)
+      await request(app.getHttpServer())
+        .post('/api/v1/auth/register')
+        .send({
+          name: 'Senha Fraca E2E',
+          email: testEmail,
+          password: 'fraca',
+        })
+        .expect(400);
+
+      // Chamada #2 em /auth/register
       const registerRes = await request(app.getHttpServer())
         .post('/api/v1/auth/register')
         .send({
@@ -245,8 +255,8 @@ describe('Auth & Security Hardening (E2E Real)', () => {
     });
 
     it('deve bloquear com 429 Too Many Requests a 6ª tentativa em /auth/register sem afetar usuário autenticado', async () => {
-      // Já foi feita 1 chamada ao /auth/register na suíte 2; as próximas 4 atingem o limite 5
-      for (let attempt = 2; attempt <= 5; attempt++) {
+      // Já foram feitas 2 chamadas ao /auth/register na suíte 2; as próximas 3 atingem o limite 5
+      for (let attempt = 3; attempt <= 5; attempt++) {
         await request(app.getHttpServer())
           .post('/api/v1/auth/register')
           .send({

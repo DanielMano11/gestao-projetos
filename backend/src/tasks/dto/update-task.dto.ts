@@ -6,6 +6,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -25,10 +26,11 @@ export class UpdateTaskDto {
   @IsBoolean()
   isCompleted?: boolean;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ minimum: 0, maximum: 1000 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(0)
+  @Max(1000)
   position?: number;
 }

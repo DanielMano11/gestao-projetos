@@ -71,6 +71,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
         `${request.method} ${request.url} -> ${status}${prismaCode}`,
         exception instanceof Error ? exception.stack : String(exception),
       );
+    } else if (
+      status === HttpStatus.UNAUTHORIZED ||
+      status === HttpStatus.FORBIDDEN ||
+      status === HttpStatus.TOO_MANY_REQUESTS
+    ) {
+      this.logger.warn(
+        `SECURITY_ACCESS_DENIED ${request.method} ${request.url} -> ${status} ip=${request.ip}`,
+      );
     }
 
     response.status(status).json({

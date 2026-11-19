@@ -54,8 +54,10 @@ export const ClientsPage: React.FC = () => {
     <div className="space-y-5">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Clientes</h2>
-          <p className="text-xs text-slate-500">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+            Clientes
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Contatos rápidos (WhatsApp e e-mail) e histórico de serviços contratados.
           </p>
         </div>
@@ -66,7 +68,7 @@ export const ClientsPage: React.FC = () => {
             setEditingClient(null);
             setModalOpen(true);
           }}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
         >
           <Plus className="h-4 w-4" />
           Novo Cliente
@@ -79,7 +81,7 @@ export const ClientsPage: React.FC = () => {
           placeholder="Buscar por nome, WhatsApp ou e-mail..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm sm:w-80"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 sm:w-80"
         />
       </div>
 

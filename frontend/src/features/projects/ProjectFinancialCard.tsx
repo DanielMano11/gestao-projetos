@@ -88,32 +88,38 @@ export const ProjectFinancialCard: React.FC<ProjectFinancialCardProps> = ({
   };
 
   return (
-    <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-slate-900">
+        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
           Controle Financeiro do Projeto
         </h3>
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
           {FINANCIAL_STATUS_LABELS[financialStatus]}
         </span>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="rounded-lg bg-slate-50 p-3">
-          <p className="text-xs text-slate-500">Valor Cobrado</p>
-          <p className="text-lg font-bold text-slate-900">
+        <div className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/70">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Valor Cobrado
+          </p>
+          <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
             <CurrencyDisplay value={chargedAmount} />
           </p>
         </div>
-        <div className="rounded-lg bg-emerald-50 p-3">
-          <p className="text-xs text-emerald-700">Valor Pago</p>
-          <p className="text-lg font-bold text-emerald-700">
+        <div className="rounded-lg bg-emerald-50 p-3 dark:bg-emerald-950/50">
+          <p className="text-xs text-emerald-700 dark:text-emerald-300">
+            Valor Pago
+          </p>
+          <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
             <CurrencyDisplay value={paidAmount} />
           </p>
         </div>
-        <div className="rounded-lg bg-amber-50 p-3">
-          <p className="text-xs text-amber-800">Saldo a Receber</p>
-          <p className="text-lg font-bold text-amber-800">
+        <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-950/50">
+          <p className="text-xs text-amber-800 dark:text-amber-300">
+            Saldo a Receber
+          </p>
+          <p className="text-lg font-bold text-amber-800 dark:text-amber-300">
             <CurrencyDisplay value={receivableAmount} />
           </p>
         </div>
@@ -122,21 +128,24 @@ export const ProjectFinancialCard: React.FC<ProjectFinancialCardProps> = ({
       {validationError && (
         <div
           role="alert"
-          className="rounded-md bg-red-50 p-2.5 text-xs font-medium text-red-700"
+          className="rounded-md bg-red-50 p-2.5 text-xs font-medium text-red-700 dark:bg-red-950/60 dark:text-red-300"
         >
           {validationError}
         </div>
       )}
 
-      <form onSubmit={handleSaveDirect} className="space-y-3 border-t pt-3">
-        <p className="text-xs font-semibold text-slate-700">
+      <form
+        onSubmit={handleSaveDirect}
+        className="space-y-3 border-t border-slate-200 pt-3 dark:border-slate-800"
+      >
+        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           Ajuste Direto (Acumulado)
         </p>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <div>
             <label
               htmlFor="chargedAmountInput"
-              className="block text-xs text-slate-600"
+              className="block text-xs text-slate-600 dark:text-slate-400"
             >
               Valor Cobrado (R$)
             </label>
@@ -146,13 +155,13 @@ export const ProjectFinancialCard: React.FC<ProjectFinancialCardProps> = ({
               step="0.01"
               value={chargedInput}
               onChange={(e) => setChargedInput(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
           <div>
             <label
               htmlFor="paidAmountInput"
-              className="block text-xs text-slate-600"
+              className="block text-xs text-slate-600 dark:text-slate-400"
             >
               Valor Pago Acumulado (R$)
             </label>
@@ -162,20 +171,23 @@ export const ProjectFinancialCard: React.FC<ProjectFinancialCardProps> = ({
               step="0.01"
               value={paidInput}
               onChange={(e) => setPaidInput(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
         </div>
         <button
           type="submit"
-          className="rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-900"
+          className="rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600"
         >
           Atualizar Valores
         </button>
       </form>
 
-      <form onSubmit={handleAddInstallment} className="space-y-3 border-t pt-3">
-        <p className="text-xs font-semibold text-slate-700">
+      <form
+        onSubmit={handleAddInstallment}
+        className="space-y-3 border-t border-slate-200 pt-3 dark:border-slate-800"
+      >
+        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           Lançar Parcela / Recebimento Individual
         </p>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -185,19 +197,19 @@ export const ProjectFinancialCard: React.FC<ProjectFinancialCardProps> = ({
             placeholder="Valor da parcela (R$)"
             value={installmentAmount}
             onChange={(e) => setInstallmentAmount(e.target.value)}
-            className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm"
+            className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
           <input
             type="text"
             placeholder="Observação (ex.: Entrada 50%)"
             value={installmentNote}
             onChange={(e) => setInstallmentNote(e.target.value)}
-            className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm"
+            className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
         </div>
         <button
           type="submit"
-          className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+          className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
         >
           <Plus className="h-3.5 w-3.5" />
           Registrar Parcela
@@ -205,20 +217,20 @@ export const ProjectFinancialCard: React.FC<ProjectFinancialCardProps> = ({
       </form>
 
       {payments.length > 0 && (
-        <div className="border-t pt-3">
-          <p className="mb-2 text-xs font-semibold text-slate-700">
+        <div className="border-t border-slate-200 pt-3 dark:border-slate-800">
+          <p className="mb-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
             Histórico de Parcelas Recebidas
           </p>
           <ul className="space-y-1.5 text-xs">
             {payments.map((pay) => (
               <li
                 key={pay.id}
-                className="flex items-center justify-between rounded-md bg-slate-50 px-3 py-1.5"
+                className="flex items-center justify-between rounded-md bg-slate-50 px-3 py-1.5 text-slate-700 dark:bg-slate-800/70 dark:text-slate-300"
               >
                 <span>
                   <CurrencyDisplay
                     value={pay.amount}
-                    className="font-semibold text-emerald-700"
+                    className="font-semibold text-emerald-700 dark:text-emerald-400"
                   />{' '}
                   — {pay.note || 'Pagamento registrado'}
                 </span>
@@ -227,7 +239,7 @@ export const ProjectFinancialCard: React.FC<ProjectFinancialCardProps> = ({
                     type="button"
                     onClick={() => onRemovePayment(pay.id)}
                     aria-label="Estornar parcela"
-                    className="text-red-600 hover:underline"
+                    className="text-red-600 hover:underline dark:text-red-400"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>

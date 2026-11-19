@@ -47,32 +47,60 @@ function isValidHttpOrigin(raw: string): boolean {
   });
 }
 
-export const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.coerce.number().int().min(1).max(65535).default(3000),
-  DATABASE_URL: z
-    .string()
-    .trim()
-    .min(1, 'DATABASE_URL é obrigatória')
-    .refine(
-      (value) =>
-        value.startsWith('postgresql://') || value.startsWith('postgres://'),
-      'DATABASE_URL deve utilizar o protocolo postgresql:// ou postgres://',
-    ),
-  JWT_SECRET: z
-    .string()
-    .trim()
-    .min(32, 'JWT_SECRET deve possuir no mínimo 32 caracteres'),
-  JWT_EXPIRES_IN: z.string().trim().min(1).default('7d'),
-  FRONTEND_URL: z
-    .string()
-    .trim()
-    .min(1, 'FRONTEND_URL é obrigatória')
-    .refine(
-      isValidHttpOrigin,
-      'FRONTEND_URL deve conter uma ou mais URLs http(s) válidas separadas por vírgula e nunca wildcard (*)',
-    ),
-});
+export const envSchema = z
+  .object({
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+    DATABASE_URL: z
+      .string()
+      .trim()
+      .min(1, 'DATABASE_URL é obrigatória')
+      .refine(
+        (value) =>
+          value.startsWith('postgresql://') || value.startsWith('postgres://'),
+        'DATABASE_URL deve utilizar o protocolo postgresql:// ou postgres://',
+      ),
+    JWT_SECRET: z
+      .string()
+      .trim()
+      .min(32, 'JWT_SECRET deve possuir no mínimo 32 caracteres'),
+    JWT_EXPIRES_IN: z.string().trim().min(1).default('8h'),
+    TRUST_PROXY: z
+      .preprocess((val) => {
+        if (typeof val === 'boolean') return val;
+        if (typeof val === 'string') {
+          const normalized = val.trim().toLowerCase();
+          if (normalized === 'true') return true;
+          if (normalized === 'false' || normalized === '') return false;
+        }
+        return val;
+      }, z.boolean())
+      .default(false),
+    FRONTEND_URL: z
+      .string()
+      .trim()
+      .min(1, 'FRONTEND_URL é obrigatória')
+      .refine(
+        isValidHttpOrigin,
+        'FRONTEND_URL deve conter uma ou mais URLs http(s) válidas separadas por vírgula e nunca wildcard (*)',
+      ),
+  })
+  .superRefine((data, ctx) => {
+    if (data.NODE_ENV === 'production') {
+      const origins = parseAllowedOrigins(data.FRONTEND_URL);
+      const hasInsecureOrigin = origins.some(
+        (origin) => !origin.startsWith('https://'),
+      );
+      if (hasInsecureOrigin) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['FRONTEND_URL'],
+          message:
+            'Em produção, FRONTEND_URL deve utilizar apenas origens https://',
+        });
+      }
+    }
+  });
 
 export type EnvConfig = z.infer<typeof envSchema>;
 

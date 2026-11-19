@@ -9,6 +9,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
+const DUMMY_PASSWORD_HASH =
+  '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -48,12 +51,10 @@ export class AuthService {
       where: { email: dto.email.toLowerCase().trim() },
     });
 
-    if (!user) {
-      throw new UnauthorizedException('Credenciais inválidas');
-    }
+    const passwordHash = user ? user.passwordHash : DUMMY_PASSWORD_HASH;
+    const valid = await bcrypt.compare(dto.password, passwordHash);
 
-    const valid = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!valid) {
+    if (!user || !valid) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 

@@ -15,20 +15,20 @@ export const UrgentProjectsList: React.FC<UrgentProjectsListProps> = ({
   items,
 }) => {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-4 flex items-center gap-2">
-        <AlertTriangle className="h-5 w-5 text-amber-600" />
-        <h3 className="text-base font-semibold text-slate-900">
+        <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
           Projetos Urgentes e em Atraso
         </h3>
       </div>
 
       {items.length === 0 ? (
-        <p className="py-6 text-center text-sm text-slate-500">
+        <p className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
           Nenhum projeto atrasado ou com entrega crítica nos próximos 7 dias.
         </p>
       ) : (
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-slate-100 dark:divide-slate-800">
           {items.map((item) => (
             <div
               key={item.id}
@@ -38,17 +38,21 @@ export const UrgentProjectsList: React.FC<UrgentProjectsListProps> = ({
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
                     to={`/projects/${item.id}`}
-                    className="font-semibold text-indigo-600 hover:underline"
+                    className="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
                   >
                     {item.title}
                   </Link>
                   <StatusBadge status={item.status} />
                 </div>
-                <p className="text-xs text-slate-500">
-                  Cliente: <strong>{item.clientName}</strong> • Saldo a receber:{' '}
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Cliente:{' '}
+                  <strong className="text-slate-700 dark:text-slate-200">
+                    {item.clientName}
+                  </strong>{' '}
+                  • Saldo a receber:{' '}
                   <CurrencyDisplay
                     value={item.receivableAmount}
-                    className="font-medium text-slate-700"
+                    className="font-medium text-slate-700 dark:text-slate-200"
                   />
                 </p>
               </div>

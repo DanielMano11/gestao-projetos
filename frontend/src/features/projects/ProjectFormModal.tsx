@@ -68,19 +68,19 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
     <Modal isOpen={isOpen} title="Novo Projeto / Serviço" onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-3">
         {error && (
-          <div className="rounded-md bg-red-50 p-2.5 text-xs text-red-700">
+          <div className="rounded-md bg-red-50 p-2.5 text-xs text-red-700 dark:bg-red-950/60 dark:text-red-300">
             {error}
           </div>
         )}
         <div>
-          <label className="block text-xs font-medium text-slate-700">
+          <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
             Cliente *
           </label>
           <select
             required
             value={clientId}
             onChange={(e) => setClientId(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             <option value="">Selecione um cliente</option>
             {clients.map((c) => (
@@ -92,7 +92,7 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-700">
+          <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
             Título do Projeto *
           </label>
           <input
@@ -100,31 +100,31 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-700">
+          <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
             Descrição / Escopo
           </label>
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-medium text-slate-700">
+            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
               Status Inicial
             </label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as ProjectStatus)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             >
               <option value="PROPOSAL">Proposta</option>
               <option value="IN_PROGRESS">Em Andamento</option>
@@ -134,7 +134,7 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-700">
+            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
               Prazo Final *
             </label>
             <input
@@ -142,14 +142,14 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
               required
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-medium text-slate-700">
+            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
               Valor Cobrado (R$) *
             </label>
             <input
@@ -159,11 +159,11 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
               required
               value={chargedAmount}
               onChange={(e) => setChargedAmount(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-700">
+            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
               Valor Pago Inicial (R$)
             </label>
             <input
@@ -172,13 +172,13 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
               min="0"
               value={paidAmount}
               onChange={(e) => setPaidAmount(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-700">
+          <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
             Checklist Inicial (1 tarefa por linha)
           </label>
           <textarea
@@ -186,7 +186,7 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
             value={tasksText}
             onChange={(e) => setTasksText(e.target.value)}
             placeholder="Levantamento de requisitos&#10;Desenvolvimento&#10;Entrega final"
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
         </div>
 
@@ -194,13 +194,13 @@ export const ProjectFormModal: React.FC<ProjectFormModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-medium text-slate-700"
+            className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             Cancelar
           </button>
           <button
             type="submit"
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700"
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
           >
             Criar Projeto
           </button>

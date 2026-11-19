@@ -14,7 +14,7 @@ describe('env.validation (Crash-on-Boot)', () => {
     expect(parsed.JWT_SECRET).toBe(validEnv.JWT_SECRET);
     expect(parsed.FRONTEND_URL).toBe(validEnv.FRONTEND_URL);
     expect(parsed.PORT).toBe(3000);
-    expect(parsed.JWT_EXPIRES_IN).toBe('7d');
+    expect(parsed.JWT_EXPIRES_IN).toBe('8h');
     expect(parsed.NODE_ENV).toBe('development');
   });
 
@@ -105,6 +105,39 @@ describe('env.validation (Crash-on-Boot)', () => {
       'http://localhost:5173',
       'https://app.gestao.com.br',
     ]);
+  });
+
+  it('deve aplicar defaults JWT_EXPIRES_IN=8h e TRUST_PROXY=false', () => {
+    const parsed = validateEnv(validEnv);
+
+    expect(parsed.JWT_EXPIRES_IN).toBe('8h');
+    expect(parsed.TRUST_PROXY).toBe(false);
+  });
+
+  it('deve converter TRUST_PROXY string para booleano corretamente', () => {
+    expect(validateEnv({ ...validEnv, TRUST_PROXY: 'true' }).TRUST_PROXY).toBe(
+      true,
+    );
+    expect(validateEnv({ ...validEnv, TRUST_PROXY: 'false' }).TRUST_PROXY).toBe(
+      false,
+    );
+  });
+
+  it('deve exigir FRONTEND_URL com https:// quando NODE_ENV=production', () => {
+    expect(() =>
+      validateEnv({
+        ...validEnv,
+        NODE_ENV: 'production',
+        FRONTEND_URL: 'http://app.gestao.com.br',
+      }),
+    ).toThrow(/https:\/\//);
+
+    const parsed = validateEnv({
+      ...validEnv,
+      NODE_ENV: 'production',
+      FRONTEND_URL: 'https://app.gestao.com.br',
+    });
+    expect(parsed.FRONTEND_URL).toBe('https://app.gestao.com.br');
   });
 });
 

@@ -1,7 +1,10 @@
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
+import { RegisterDto } from './dto/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
 
 describe('AuthService', () => {
@@ -114,8 +117,9 @@ describe('AuthService', () => {
       expect(result.user).not.toHaveProperty('passwordHash');
     });
 
-    it('deve lançar UnauthorizedException quando o usuário não existe', async () => {
+    it('deve lançar UnauthorizedException quando o usuário não existe e executar bcrypt.compare contra hash dummy', async () => {
       prismaMock.user.findUnique.mockResolvedValue(null);
+      const startedAt = Date.now();
 
       await expect(
         service.login({
@@ -123,6 +127,8 @@ describe('AuthService', () => {
           password: 'qualquer-senha',
         }),
       ).rejects.toThrow(UnauthorizedException);
+      const elapsedMs = Date.now() - startedAt;
+      expect(elapsedMs).toBeGreaterThanOrEqual(5);
       expect(jwtServiceMock.signAsync).not.toHaveBeenCalled();
     });
 
@@ -142,6 +148,30 @@ describe('AuthService', () => {
         }),
       ).rejects.toThrow(UnauthorizedException);
       expect(jwtServiceMock.signAsync).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('RegisterDto password policy', () => {
+    it('deve rejeitar senhas fracas (<8 chars, sem maiúscula, sem número ou >72 chars) e aceitar senha forte', async () => {
+      const weakCases = ['Ab1234', 'senhaforte123', 'SENHAFORTE123', 'SenhaForte', `${'A'.repeat(71)}a1`];
+
+      for (const password of weakCases) {
+        const dto = plainToInstance(RegisterDto, {
+          name: 'Usuário Teste',
+          email: 'teste@exemplo.com',
+          password,
+        });
+        const errors = await validate(dto);
+        expect(errors.some((e) => e.property === 'password')).toBe(true);
+      }
+
+      const validDto = plainToInstance(RegisterDto, {
+        name: 'Usuário Teste',
+        email: 'teste@exemplo.com',
+        password: 'SenhaForte123',
+      });
+      const validErrors = await validate(validDto);
+      expect(validErrors).toHaveLength(0);
     });
   });
 });

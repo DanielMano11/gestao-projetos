@@ -1,4 +1,4 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
 import { parseAllowedOrigins } from './config/env.validation';
@@ -11,6 +11,16 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
  */
 export function configureApp(app: INestApplication): void {
   const configService = app.get(ConfigService);
+  const trustProxy = configService.get<boolean>('TRUST_PROXY') ?? false;
+  if (trustProxy) {
+    const httpInstance = app.getHttpAdapter().getInstance() as {
+      set?: (setting: string, value: unknown) => void;
+    };
+    if (typeof httpInstance?.set === 'function') {
+      httpInstance.set('trust proxy', 1);
+    }
+  }
+
   const allowedOrigins = parseAllowedOrigins(
     configService.getOrThrow<string>('FRONTEND_URL'),
   );

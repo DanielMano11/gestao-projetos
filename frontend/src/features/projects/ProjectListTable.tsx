@@ -16,9 +16,9 @@ export const ProjectListTable: React.FC<ProjectListTableProps> = ({
   onStatusChange,
 }) => {
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <table className="w-full text-left text-sm">
-        <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500">
+        <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
           <tr>
             <th className="px-4 py-3">Projeto / Cliente</th>
             <th className="px-4 py-3">Status</th>
@@ -27,18 +27,21 @@ export const ProjectListTable: React.FC<ProjectListTableProps> = ({
             <th className="px-4 py-3">Cobrado / A Receber</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
           {projects.map((project) => (
-            <tr key={project.id} className="hover:bg-slate-50/70">
+            <tr
+              key={project.id}
+              className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50"
+            >
               <td className="px-4 py-3">
                 <Link
                   to={`/projects/${project.id}`}
-                  className="font-semibold text-indigo-600 hover:underline"
+                  className="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
                 >
                   {project.title}
                 </Link>
                 {project.client && (
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Cliente: {project.client.name}
                   </p>
                 )}
@@ -66,15 +69,15 @@ export const ProjectListTable: React.FC<ProjectListTableProps> = ({
                 />
               </td>
               <td className="px-4 py-3">
-                <div className="text-xs">
+                <div className="text-xs text-slate-600 dark:text-slate-400">
                   <div>
                     Cobrado:{' '}
                     <CurrencyDisplay
                       value={project.chargedAmount}
-                      className="font-medium text-slate-900"
+                      className="font-medium text-slate-900 dark:text-slate-100"
                     />
                   </div>
-                  <div className="text-amber-700">
+                  <div className="text-amber-700 dark:text-amber-400">
                     A receber:{' '}
                     <CurrencyDisplay
                       value={project.receivableAmount}

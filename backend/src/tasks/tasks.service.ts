@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+
+const MAX_TASKS_PER_PROJECT = 200;
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -46,6 +52,11 @@ export class TasksService {
   async create(userId: string, projectId: string, dto: CreateTaskDto) {
     await this.ensureProjectBelongsToUser(userId, projectId);
     const existingCount = await this.prisma.task.count({ where: { projectId } });
+    if (existingCount >= MAX_TASKS_PER_PROJECT) {
+      throw new BadRequestException(
+        `Limite máximo de ${MAX_TASKS_PER_PROJECT} tarefas por projeto atingido`,
+      );
+    }
 
     const created = await this.prisma.task.create({
       data: {

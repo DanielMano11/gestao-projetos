@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clearAuthSession, TOKEN_STORAGE_KEY } from './queryClient';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
@@ -11,7 +12,7 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('gestao_projetos_token');
+  const token = localStorage.getItem(TOKEN_STORAGE_KEY);
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -22,8 +23,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('gestao_projetos_token');
-      localStorage.removeItem('gestao_projetos_user');
+      clearAuthSession();
+      if (
+        typeof window !== 'undefined' &&
+        window.location.pathname !== '/login'
+      ) {
+        window.location.assign('/login');
+      }
     }
     return Promise.reject(error);
   },

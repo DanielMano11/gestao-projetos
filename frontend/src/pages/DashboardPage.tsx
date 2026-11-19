@@ -38,10 +38,10 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-slate-900">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
           Dashboard Financeiro e Operacional
         </h2>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           Visão consolidada de entradas de caixa, recebíveis, prazos e saúde dos projetos
         </p>
       </div>
@@ -54,7 +54,7 @@ export const DashboardPage: React.FC = () => {
       />
 
       {isLoading || !data ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
           Carregando indicadores do sistema...
         </div>
       ) : (

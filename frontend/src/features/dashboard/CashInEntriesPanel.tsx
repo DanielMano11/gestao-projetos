@@ -38,39 +38,47 @@ export const CashInEntriesPanel: React.FC<CashInEntriesPanelProps> = ({
       : 'Todo o período';
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-5">
+    <div className="space-y-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="flex items-center gap-2 text-base font-semibold text-slate-900">
-            <ArrowDownLeft className="h-5 w-5 text-emerald-600" />
+          <h3 className="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-slate-100">
+            <ArrowDownLeft className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             Entradas de Caixa e Recebimentos
           </h3>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
             Acompanhamento de valores que entraram no sistema ({periodLabel})
           </p>
         </div>
 
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-right">
-          <span className="block text-[11px] font-medium uppercase tracking-wide text-emerald-700">
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-right dark:border-emerald-800/60 dark:bg-emerald-950/50">
+          <span className="block text-[11px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
             Total de Entradas no Filtro
           </span>
-          <span className="text-base font-bold text-emerald-800">
+          <span className="text-base font-bold text-emerald-800 dark:text-emerald-200">
             {formatCurrencyBRL(entriesInPeriod)}
           </span>
         </div>
       </div>
 
       {/* Barra comparativa Recebido vs A Receber */}
-      <div className="rounded-lg border border-slate-100 bg-slate-50 p-3.5 space-y-2">
-        <div className="flex items-center justify-between text-xs font-medium text-slate-700">
+      <div className="space-y-2 rounded-lg border border-slate-100 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-800/50">
+        <div className="flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-300">
           <span>
-            Recebido: <strong className="text-emerald-700">{formatCurrencyBRL(financials.totalPaid)}</strong> ({paidShare}%)
+            Recebido:{' '}
+            <strong className="text-emerald-700 dark:text-emerald-400">
+              {formatCurrencyBRL(financials.totalPaid)}
+            </strong>{' '}
+            ({paidShare}%)
           </span>
           <span>
-            A Receber: <strong className="text-amber-700">{formatCurrencyBRL(financials.totalReceivable)}</strong> ({receivableShare}%)
+            A Receber:{' '}
+            <strong className="text-amber-700 dark:text-amber-400">
+              {formatCurrencyBRL(financials.totalReceivable)}
+            </strong>{' '}
+            ({receivableShare}%)
           </span>
         </div>
-        <div className="flex h-3 w-full overflow-hidden rounded-full bg-slate-200">
+        <div className="flex h-3 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
           <div
             className="bg-emerald-500 transition-all duration-300"
             style={{ width: `${paidShare}%` }}
@@ -82,7 +90,7 @@ export const CashInEntriesPanel: React.FC<CashInEntriesPanelProps> = ({
             title={`A Receber: ${receivableShare}%`}
           />
         </div>
-        <div className="flex items-center justify-between text-[11px] text-slate-500">
+        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
           <span className="inline-flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
             Entrada efetivada em caixa
@@ -96,11 +104,11 @@ export const CashInEntriesPanel: React.FC<CashInEntriesPanelProps> = ({
 
       {/* Lista de Entradas */}
       {entries.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
+        <div className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
           Nenhuma entrada financeira registrada para o período ou filtro selecionado.
         </div>
       ) : (
-        <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto pr-1">
+        <div className="max-h-80 divide-y divide-slate-100 overflow-y-auto pr-1 dark:divide-slate-800">
           {entries.map((entry) => (
             <div
               key={entry.id}
@@ -110,26 +118,28 @@ export const CashInEntriesPanel: React.FC<CashInEntriesPanelProps> = ({
                 <div className="flex items-center gap-2">
                   <Link
                     to={`/projects/${entry.projectId}`}
-                    className="inline-flex items-center gap-1 font-medium text-slate-900 hover:text-indigo-600"
+                    className="inline-flex items-center gap-1 font-medium text-slate-900 hover:text-indigo-600 dark:text-slate-100 dark:hover:text-indigo-400"
                   >
                     {entry.projectTitle}
-                    <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
+                    <ExternalLink className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                   </Link>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
                     • {entry.clientName}
                   </span>
                 </div>
                 {entry.note && (
-                  <p className="text-xs text-slate-500">{entry.note}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {entry.note}
+                  </p>
                 )}
               </div>
 
               <div className="flex items-center justify-between gap-4 sm:justify-end">
-                <span className="inline-flex items-center gap-1 text-xs text-slate-500">
-                  <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                  <Calendar className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                   {formatDateBR(entry.paidAt)}
                 </span>
-                <span className="rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
+                <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-950/50 dark:text-emerald-300">
                   + {formatCurrencyBRL(entry.amount)}
                 </span>
               </div>

@@ -4,6 +4,7 @@ import {
   IsEmail,
   IsNotEmpty,
   IsString,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -26,9 +27,19 @@ export class RegisterDto {
   @MaxLength(160)
   email: string;
 
-  @ApiProperty({ example: 'senhaSegura123', minLength: 6, maxLength: 128 })
+  @ApiProperty({
+    example: 'SenhaForte123',
+    minLength: 8,
+    maxLength: 72,
+    description:
+      'Mínimo 8 caracteres com pelo menos 1 letra maiúscula, 1 minúscula e 1 número',
+  })
   @IsString()
-  @MinLength(6)
-  @MaxLength(128)
+  @MinLength(8, { message: 'A senha deve possuir no mínimo 8 caracteres' })
+  @MaxLength(72, { message: 'A senha deve possuir no máximo 72 caracteres' })
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+    message:
+      'A senha deve conter pelo menos 1 letra minúscula, 1 maiúscula e 1 número',
+  })
   password: string;
 }

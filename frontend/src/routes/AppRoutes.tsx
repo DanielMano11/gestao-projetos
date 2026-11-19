@@ -8,11 +8,12 @@ import { ClientDetailPage } from '../pages/ClientDetailPage';
 import { ProjectsPage } from '../pages/ProjectsPage';
 import { ProjectDetailPage } from '../pages/ProjectDetailPage';
 
+import { hasValidStoredToken } from '../services/queryClient';
+
 const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({
   children,
 }) => {
-  const token = localStorage.getItem('gestao_projetos_token');
-  if (!token) {
+  if (!hasValidStoredToken()) {
     return <Navigate to="/login" replace />;
   }
   return children;

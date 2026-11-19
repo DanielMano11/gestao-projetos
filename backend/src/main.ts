@@ -9,19 +9,23 @@ async function bootstrap() {
 
   configureApp(app);
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('Sistema de Gestão de Projetos API')
-    .setDescription(
-      'API RESTful para gerenciamento de clientes, projetos, prazos, checklists e fluxo de caixa',
-    )
-    .setVersion('1.0.0')
-    .addBearerAuth()
-    .build();
-
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, document);
-
   const configService = app.get(ConfigService);
+  const nodeEnv = configService.get<string>('NODE_ENV');
+
+  if (nodeEnv !== 'production') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('Sistema de Gestão de Projetos API')
+      .setDescription(
+        'API RESTful para gerenciamento de clientes, projetos, prazos, checklists e fluxo de caixa',
+      )
+      .setVersion('1.0.0')
+      .addBearerAuth()
+      .build();
+
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, document);
+  }
+
   const port = configService.getOrThrow<number>('PORT');
   await app.listen(port);
 }

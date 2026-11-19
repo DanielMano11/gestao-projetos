@@ -1,6 +1,8 @@
+import { BadRequestException } from '@nestjs/common';
 import { ProjectStatus } from '@prisma/client';
-import { calculateChecklistProgress } from './tasks.service';
+import { calculateChecklistProgress, TasksService } from './tasks.service';
 import { computeProjectMetrics } from '../projects/projects.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 describe('TasksService & Prazos (US2)', () => {
   it('deve retornar 0% quando o checklist estiver vazio (sem divisão por zero)', () => {
@@ -58,6 +60,25 @@ describe('TasksService & Prazos (US2)', () => {
     expect(completedMetrics.isOverdue).toBe(false);
     expect(completedMetrics.isUrgent).toBe(false);
     expect(completedMetrics.progressPercentage).toBe(100);
+  });
+
+  it('deve bloquear criação de nova tarefa quando o projeto atinge o limite de 200 tarefas', async () => {
+    const prismaMock = {
+      project: {
+        findFirst: jest.fn().mockResolvedValue({ id: 'p1', clientId: 'c1' }),
+      },
+      task: {
+        count: jest.fn().mockResolvedValue(200),
+        create: jest.fn(),
+      },
+    };
+
+    const service = new TasksService(prismaMock as unknown as PrismaService);
+
+    await expect(
+      service.create('u1', 'p1', { title: 'Tarefa excedente' }),
+    ).rejects.toThrow(BadRequestException);
+    expect(prismaMock.task.create).not.toHaveBeenCalled();
   });
 });
 

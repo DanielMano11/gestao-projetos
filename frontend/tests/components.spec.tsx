@@ -1,14 +1,24 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { QuickContactActions } from '../src/components/ui/QuickContactActions';
+import { Header } from '../src/components/layout/Header';
+import { LoginPage } from '../src/pages/LoginPage';
 import { ProjectChecklistPanel } from '../src/features/projects/ProjectChecklistPanel';
 import { ProjectFinancialCard } from '../src/features/projects/ProjectFinancialCard';
 import { FinancialSummaryCards } from '../src/features/dashboard/FinancialSummaryCards';
 import { UrgentProjectsList } from '../src/features/dashboard/UrgentProjectsList';
 import { DashboardFiltersBar } from '../src/features/dashboard/DashboardFiltersBar';
 import { CashInEntriesPanel } from '../src/features/dashboard/CashInEntriesPanel';
+import {
+  clearAuthSession,
+  getStoredUser,
+  hasValidStoredToken,
+  queryClient,
+  TOKEN_STORAGE_KEY,
+  USER_STORAGE_KEY,
+} from '../src/services/queryClient';
 import { getCurrentMonthDateRange } from '../src/utils/format';
 
 describe('Frontend Critical Components (US1-US4 / T051)', () => {
@@ -237,5 +247,75 @@ describe('Frontend Critical Components (US1-US4 / T051)', () => {
 
     expect(screen.getByText('Portal Corporativo')).toBeInTheDocument();
     expect(screen.getByText('Entrada 50%')).toBeInTheDocument();
+  });
+
+  describe('Security & Session Hardening', () => {
+    beforeEach(() => {
+      localStorage.clear();
+      queryClient.clear();
+    });
+
+    it('LoginPage deve inicializar campos vazios sem credenciais hardcoded', () => {
+      const { container } = render(
+        <MemoryRouter>
+          <LoginPage />
+        </MemoryRouter>,
+      );
+
+      const emailInput = container.querySelector(
+        'input[type="email"]',
+      ) as HTMLInputElement;
+      const passwordInput = container.querySelector(
+        'input[type="password"]',
+      ) as HTMLInputElement;
+
+      expect(emailInput.value).toBe('');
+      expect(passwordInput.value).toBe('');
+      expect(passwordInput).toHaveAttribute('minLength', '8');
+      expect(passwordInput).toHaveAttribute('maxLength', '72');
+    });
+
+    it('Header deve tolerar JSON corrompido em localStorage e limpar cache React Query no logout', () => {
+      localStorage.setItem(TOKEN_STORAGE_KEY, 'fake.header.sig');
+      localStorage.setItem(USER_STORAGE_KEY, '{json-invalido');
+      const clearSpy = vi.spyOn(queryClient, 'clear');
+
+      expect(getStoredUser()).toBeNull();
+      expect(localStorage.getItem(USER_STORAGE_KEY)).toBeNull();
+
+      render(
+        <MemoryRouter>
+          <Header />
+        </MemoryRouter>,
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /Sair/i }));
+      expect(clearSpy).toHaveBeenCalled();
+      expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBeNull();
+      clearSpy.mockRestore();
+    });
+
+    it('hasValidStoredToken deve rejeitar JWT expirado/malformado e aceitar JWT com exp futuro', () => {
+      const makeToken = (payload: Record<string, unknown>) => {
+        const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+        const body = btoa(JSON.stringify(payload));
+        return `${header}.${body}.signature`;
+      };
+
+      localStorage.setItem(TOKEN_STORAGE_KEY, 'token-invalido');
+      expect(hasValidStoredToken()).toBe(false);
+      expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBeNull();
+
+      const pastExp = Math.floor(Date.now() / 1000) - 60;
+      localStorage.setItem(TOKEN_STORAGE_KEY, makeToken({ sub: 'u1', exp: pastExp }));
+      expect(hasValidStoredToken()).toBe(false);
+
+      const futureExp = Math.floor(Date.now() / 1000) + 3600;
+      localStorage.setItem(TOKEN_STORAGE_KEY, makeToken({ sub: 'u1', exp: futureExp }));
+      expect(hasValidStoredToken()).toBe(true);
+
+      clearAuthSession();
+      expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBeNull();
+    });
   });
 });

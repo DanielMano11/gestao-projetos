@@ -81,36 +81,38 @@ describe('Projects Financial Rules & Hybrid Payments (US3)', () => {
         ],
       });
 
+    const projectFindFirst = jest
+      .fn()
+      .mockResolvedValueOnce({
+        id: 'p1',
+        clientId: 'c1',
+        chargedAmount: 5000,
+        paidAmount: 2000,
+        status: ProjectStatus.IN_PROGRESS,
+        deadline: new Date('2026-11-20T00:00:00Z'),
+        tasks: [],
+        payments: [],
+      })
+      .mockResolvedValueOnce({
+        id: 'p1',
+        clientId: 'c1',
+        chargedAmount: 5000,
+        paidAmount: 3500,
+        status: ProjectStatus.IN_PROGRESS,
+        deadline: new Date('2026-11-20T00:00:00Z'),
+        tasks: [],
+        payments: [],
+      });
+
     const prismaMock = {
       project: {
-        findFirst: jest
-          .fn()
-          .mockResolvedValueOnce({
-            id: 'p1',
-            clientId: 'c1',
-            chargedAmount: 5000,
-            paidAmount: 2000,
-            status: ProjectStatus.IN_PROGRESS,
-            deadline: new Date('2026-11-20T00:00:00Z'),
-            tasks: [],
-            payments: [],
-          })
-          .mockResolvedValueOnce({
-            id: 'p1',
-            clientId: 'c1',
-            chargedAmount: 5000,
-            paidAmount: 3500,
-            status: ProjectStatus.IN_PROGRESS,
-            deadline: new Date('2026-11-20T00:00:00Z'),
-            tasks: [],
-            payments: [],
-          }),
+        findFirst: projectFindFirst,
       },
       $transaction: jest.fn((cb: (tx: unknown) => unknown) =>
         cb({
           task: { updateMany: taskUpdateMany },
           payment: { create: paymentCreate },
-          project: { update: projectUpdate },
+          project: { findFirst: projectFindFirst, update: projectUpdate },
         }),
       ),
     };
@@ -151,6 +153,34 @@ describe('Projects Financial Rules & Hybrid Payments (US3)', () => {
     expect(completedProject.paidAmount).toBe(5000);
     expect(completedProject.receivableAmount).toBe(0);
     expect(completedProject.financialStatus).toBe('PAID');
+  });
+
+  it('deve rejeitar pagamento que excede o valor cobrado usando leitura transacional', async () => {
+    const paymentCreate = jest.fn();
+    const projectFindFirst = jest.fn().mockResolvedValue({
+      id: 'p1',
+      clientId: 'c1',
+      chargedAmount: 1000,
+      paidAmount: 900,
+      status: ProjectStatus.IN_PROGRESS,
+      deadline: new Date('2026-11-20T00:00:00Z'),
+    });
+
+    const prismaMock = {
+      $transaction: jest.fn((cb: (tx: unknown) => unknown) =>
+        cb({
+          project: { findFirst: projectFindFirst, update: jest.fn() },
+          payment: { create: paymentCreate },
+        }),
+      ),
+    };
+
+    const service = new ProjectsService(prismaMock as unknown as PrismaService);
+
+    await expect(
+      service.addPayment('u1', 'p1', { amount: 200 }),
+    ).rejects.toThrow(BadRequestException);
+    expect(paymentCreate).not.toHaveBeenCalled();
   });
 });
 

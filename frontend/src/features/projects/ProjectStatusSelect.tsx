@@ -27,7 +27,7 @@ export const ProjectStatusSelect: React.FC<ProjectStatusSelectProps> = ({
       value={value}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value as ProjectStatus)}
-      className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-800 focus:border-indigo-500 focus:outline-none"
+      className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-800 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-400"
     >
       {ALL_STATUSES.map((status) => (
         <option key={status} value={status}>

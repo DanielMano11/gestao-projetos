@@ -22,13 +22,17 @@ export const DeadlineAlertBadge: React.FC<DeadlineAlertBadgeProps> = ({
 
   const isTerminal = status === 'COMPLETED' || status === 'CANCELED';
   if (isTerminal) {
-    return <span className="text-xs text-slate-500">{formattedDate}</span>;
+    return (
+      <span className="text-xs text-slate-500 dark:text-slate-400">
+        {formattedDate}
+      </span>
+    );
   }
 
   if (isOverdue) {
     const daysLate = Math.abs(daysRemaining ?? 1);
     return (
-      <span className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800">
+      <span className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-950/60 dark:text-red-300">
         Em Atraso ({daysLate}d) • {formattedDate}
       </span>
     );
@@ -36,12 +40,16 @@ export const DeadlineAlertBadge: React.FC<DeadlineAlertBadgeProps> = ({
 
   if (isUrgent) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+      <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
         Urgente ({daysRemaining ?? 0}d) • {formattedDate}
       </span>
     );
   }
 
-  return <span className="text-xs text-slate-700">{formattedDate}</span>;
+  return (
+    <span className="text-xs text-slate-700 dark:text-slate-300">
+      {formattedDate}
+    </span>
+  );
 };
 

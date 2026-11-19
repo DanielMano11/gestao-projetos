@@ -14,16 +14,16 @@ export const ClientServiceHistoryDrawer: React.FC<
 > = ({ projects }) => {
   if (projects.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
+      <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
         Nenhum projeto ou serviço registrado para este cliente até o momento.
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <table className="w-full text-left text-sm">
-        <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500">
+        <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
           <tr>
             <th className="px-4 py-3">Projeto / Serviço</th>
             <th className="px-4 py-3">Status</th>
@@ -32,13 +32,13 @@ export const ClientServiceHistoryDrawer: React.FC<
             <th className="px-4 py-3">Saldo Pendente</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
           {projects.map((p) => (
-            <tr key={p.id} className="hover:bg-slate-50">
+            <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
               <td className="px-4 py-3">
                 <Link
                   to={`/projects/${p.id}`}
-                  className="font-semibold text-indigo-600 hover:underline"
+                  className="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
                 >
                   {p.title}
                 </Link>

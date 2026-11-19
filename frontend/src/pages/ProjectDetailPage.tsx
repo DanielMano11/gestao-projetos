@@ -36,7 +36,7 @@ export const ProjectDetailPage: React.FC = () => {
 
   if (!project) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-800/60 dark:bg-red-950/50 dark:text-red-300">
         Projeto não encontrado.
       </div>
     );
@@ -46,28 +46,32 @@ export const ProjectDetailPage: React.FC = () => {
     <div className="space-y-6">
       <Link
         to="/projects"
-        className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-indigo-600"
+        className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
       >
         <ArrowLeft className="h-4 w-4" />
         Voltar para Projetos
       </Link>
 
-      <div className="flex flex-col justify-between gap-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center">
         <div className="space-y-1">
-          <h2 className="text-xl font-bold text-slate-900">{project.title}</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+            {project.title}
+          </h2>
           {project.client && (
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Cliente:{' '}
               <Link
                 to={`/clients/${project.client.id}`}
-                className="font-semibold text-indigo-600 hover:underline"
+                className="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
               >
                 {project.client.name}
               </Link>
             </p>
           )}
           {project.description && (
-            <p className="text-sm text-slate-600">{project.description}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              {project.description}
+            </p>
           )}
         </div>
 

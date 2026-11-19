@@ -1,4 +1,8 @@
+import { BadRequestException } from '@nestjs/common';
 import { ProjectStatus } from '@prisma/client';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import { DashboardFilterDto } from './dto/dashboard-filter.dto';
 import { DashboardService } from './dashboard.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -124,4 +128,25 @@ describe('DashboardService (US4 & Filtros de Período / Entradas)', () => {
       }
     },
   );
+
+  it('deve rejeitar intervalo startDate > endDate e datas fora do formato YYYY-MM-DD', async () => {
+    const prismaMock = {
+      project: { findMany: jest.fn() },
+    };
+    const service = new DashboardService(prismaMock as unknown as PrismaService);
+
+    await expect(
+      service.getSummary('u1', {
+        startDate: '2026-11-20',
+        endDate: '2026-11-10',
+      }),
+    ).rejects.toThrow(BadRequestException);
+    expect(prismaMock.project.findMany).not.toHaveBeenCalled();
+
+    const invalidDto = plainToInstance(DashboardFilterDto, {
+      startDate: '2026-11-01T00:00:00Z',
+    });
+    const errors = await validate(invalidDto);
+    expect(errors.some((e) => e.property === 'startDate')).toBe(true);
+  });
 });
